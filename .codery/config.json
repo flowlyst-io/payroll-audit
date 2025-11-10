@@ -1,0 +1,8 @@
+{
+  "projectKey": "PA",
+  "mainBranch": "main",
+  "gitWorkflowType": "gitflow",
+  "jiraIntegrationType": "cli",
+  "applicationDocs": [],
+  "developBranch": "develop"
+}
