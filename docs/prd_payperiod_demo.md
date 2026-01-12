@@ -11,7 +11,7 @@
 
 Build a **simplified demo prototype** of the Pay Period Comparison tool for live customer demonstrations. The demo showcases the core workflow: **upload payroll data → compare two pay periods → save snapshots with notes → export**.
 
-This is **not** a full MVP. It prioritizes visual clarity, basic interactivity, and reliability during demos using localStorage persistence.
+This is **not** a full MVP. It prioritizes visual clarity, basic interactivity, and reliability during demos using IndexedDB persistence.
 
 ---
 
@@ -19,7 +19,7 @@ This is **not** a full MVP. It prioritizes visual clarity, basic interactivity, 
 
 ### 2.1 Upload & Data Storage
 - Upload a CSV file (~7,000 rows, 10-20 columns)
-- **Store the entire CSV** in localStorage (users may need other columns for filtering)
+- **Store the entire CSV** in IndexedDB (users may need other columns for filtering)
 - User maps 3 required columns: **Employee Name**, **Amount**, **Pay Period**
 - New upload **overwrites** existing data (single data source)
 
@@ -54,7 +54,7 @@ This is **not** a full MVP. It prioritizes visual clarity, basic interactivity, 
 
 ### Upload & Map
 - **FR-U1:** User uploads a `.csv` file via file input
-- **FR-U2:** System parses CSV and stores **all columns** in localStorage
+- **FR-U2:** System parses CSV and stores **all columns** in IndexedDB
 - **FR-U3:** User assigns 3 column roles via dropdowns: Employee Name, Amount, Pay Period
 - **FR-U4:** Validation blocks navigation until all 3 roles assigned
 - **FR-U5:** New upload overwrites any existing data
@@ -67,13 +67,13 @@ This is **not** a full MVP. It prioritizes visual clarity, basic interactivity, 
 - **FR-W5:** Current Amount cell **highlighted** when Prior ≠ Current
 - **FR-W6:** Notes column editable via MUI X DataGrid cell editing
 - **FR-W7:** DataGrid provides sorting, filtering, column visibility out-of-the-box
-- **FR-W8:** "Save Snapshot" button saves comparison + notes to localStorage
+- **FR-W8:** "Save Snapshot" button saves comparison + notes to IndexedDB
 
 ### Saved Comparisons
 - **FR-S1:** List page shows all saved snapshots
 - **FR-S2:** Snapshot name auto-generated: `"PP{prior} vs PP{current} - {timestamp}"`
 - **FR-S3:** Click snapshot opens **read-only** Worksheet view (no editing, no save)
-- **FR-S4:** Delete button removes snapshot from localStorage
+- **FR-S4:** Delete button removes snapshot from IndexedDB
 - **FR-S5:** Snapshots are **immutable** — source data changes don't affect saved snapshots
 
 ### Export
@@ -81,7 +81,7 @@ This is **not** a full MVP. It prioritizes visual clarity, basic interactivity, 
 - **FR-E2:** CSV includes: Employee, Prior Amount, Current Amount, Delta, Delta%, YTD, Notes
 
 ### Persistence
-- **FR-P1:** Store in localStorage: CSV data, column mapping, saved snapshots
+- **FR-P1:** Store in IndexedDB: CSV data, column mapping, saved snapshots
 - **FR-P2:** Data survives browser refresh
 
 ---
@@ -92,7 +92,7 @@ This is **not** a full MVP. It prioritizes visual clarity, basic interactivity, 
 - **Framework:** Next.js 16 (App Router)
 - **UI Library:** MUI 7 + MUI X DataGrid
 - **Language:** TypeScript
-- **Storage:** localStorage (client-side)
+- **Storage:** IndexedDB (client-side, via `idb` library)
 - **Deployment:** Vercel
 
 ### Directory Structure
@@ -187,8 +187,7 @@ types/
 | Risk | Mitigation |
 |------|------------|
 | Large CSV slow to parse | Recommend <10k rows for demo |
-| localStorage size limit (~5MB) | 7k rows + snapshots should fit; monitor usage |
-| Browser refresh during demo | Data persisted in localStorage |
+| Browser refresh during demo | Data persisted in IndexedDB |
 | Pay period sort edge cases | Sort numerically; fall back to alphabetical |
 
 ---
@@ -200,7 +199,7 @@ types/
 - [ ] Notes editable and saved with snapshot
 - [ ] Snapshots save, list, view (read-only), delete
 - [ ] Export produces valid CSV with all columns
-- [ ] localStorage persistence verified across refresh
+- [ ] IndexedDB persistence verified across refresh
 - [ ] No runtime errors during demo script
 - [ ] Responsive on standard laptop screens
 

@@ -253,11 +253,10 @@ npm run format:check   # Check formatting
 - **Not in POC**: Authentication is deferred until post-POC
 - When implementing: Use Firebase SDK with Next.js App Router patterns
 
-### Database (TBD)
-- **Pending Decision**: NoSQL vs SQL
-- **Current Preference**: Leaning toward NoSQL
-- **Decision Criteria**: Will be determined based on user stories and data modeling requirements
-- **Considerations**: File upload patterns, audit report generation, query performance
+### Client-Side Storage
+- **Current**: IndexedDB (via `idb` library) for demo/POC phase
+- **Rationale**: localStorage has 5MB limit; IndexedDB supports large datasets (7000+ rows)
+- **Future**: Server-side database for production (NoSQL vs SQL TBD)
 
 ### File Upload (TBD)
 - **Formats**: To be determined (likely CSV, Excel)
@@ -328,7 +327,7 @@ Refer to [MUI X Documentation](https://mui.com/x/introduction/) for usage patter
 ## 1. Objective
 This demo is a **simplified, non‑persistent prototype** of the Pay Period Comparison tool. It is designed for **live customer demonstrations** to showcase the core concept — **upload payroll data → select two pay periods → view differences and cumulative totals**.  
 
-This version is **not** a full MVP. It prioritizes visual clarity, basic interactivity, and reliability during demos (refresh‑safe via `localStorage`).
+This version is **not** a full MVP. It prioritizes visual clarity, basic interactivity, and reliability during demos (refresh‑safe via IndexedDB).
 
 ---
 
@@ -338,7 +337,7 @@ This version is **not** a full MVP. It prioritizes visual clarity, basic interac
 1. **File Upload (CSV only)**
    - Upload a real payroll CSV file.
    - Select three column roles: **Pay Period**, **Employee**, and **Amount**.
-   - Data stored temporarily in memory and `localStorage`.
+   - Data stored in IndexedDB (supports large files).
 
 2. **Pay Period Comparison Table**
    - Choose **Left** and **Right** pay periods from dropdowns.
@@ -352,9 +351,8 @@ This version is **not** a full MVP. It prioritizes visual clarity, basic interac
      - Employee, LeftAmount, RightAmount, Delta, Delta%, CumulativeToRight, IsDifferent, Note.
 
 4. **Basic Persistence**
-   - Implemented via `localStorage` for resilience during demo.
+   - Implemented via IndexedDB for resilience during demo.
    - Includes dataset, mapping, and notes.
-   - 'Reset Demo' button clears all stored data.
 
 5. **Simple UI**
    - Built with **React + Next.js (App Router) + MUI** per engineering guide.
@@ -377,7 +375,7 @@ This version is **not** a full MVP. It prioritizes visual clarity, basic interac
 - **FR‑U1:** User uploads a `.csv` file.
 - **FR‑U2:** System displays all headers; user assigns the 3 required roles.
 - **FR‑U3:** Normalizes rows to `{ payPeriod, employee, amount }`.
-- **FR‑U4:** Data cached to `localStorage` to survive refresh.
+- **FR‑U4:** Data cached to IndexedDB to survive refresh.
 
 ### Compare View
 - **FR‑C1:** Select Left and Right pay periods from available values.
@@ -392,15 +390,14 @@ This version is **not** a full MVP. It prioritizes visual clarity, basic interac
 - **FR‑E2:** Include all columns + note text.
 
 ### Persistence
-- **FR‑P1:** Store dataset, mapping, and notes in `localStorage`.
-- **FR‑P2:** Include Reset Demo button.
+- **FR‑P1:** Store dataset, mapping, and notes in IndexedDB.
 
 ---
 
 ## 4. Architecture
 - **Frontend:** Next.js (React, TypeScript, App Router)
 - **UI Library:** MUI (Table, Select, TextField)
-- **Data Handling:** CSV parsed client‑side, stored in memory and localStorage.
+- **Data Handling:** CSV parsed client‑side, stored in IndexedDB via `idb` library.
 - **Deployment:** Vercel (static hosting)
 
 ### Directory Sketch
@@ -434,14 +431,14 @@ utils/
 | Risk | Mitigation |
 |------|-------------|
 | Large CSVs slow parse | Recommend small demo dataset (<5k rows). |
-| Accidental refresh | Data persisted in `localStorage`. |
+| Accidental refresh | Data persisted in IndexedDB. |
 | Data mismatch | Demo files pre‑tested for consistent columns. |
 
 ---
 
 ## 7. Definition of Done
 - Upload → Compare → Export flow works end‑to‑end.
-- LocalStorage persistence verified.
+- IndexedDB persistence verified.
 - Table highlighting and formatting functional.
 - Demo reset works reliably.
 - No runtime errors during upload or refresh.
