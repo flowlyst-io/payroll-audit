@@ -1,59 +1,48 @@
 'use client';
 
-import { useState, useCallback, useSyncExternalStore } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import AppBar from '@/components/AppBar';
 import CsvUpload from '@/components/CsvUpload';
 import ColumnMapper from '@/components/ColumnMapper';
 import { saveData, loadData } from '@/utils/storage';
 import type { ParseResult, ColumnMapping, StoredData } from '@/types';
 
-// Custom hook to safely access localStorage (handles SSR)
-function useStoredData(): StoredData | null {
-  return useSyncExternalStore(
-    // Subscribe function - localStorage doesn't have events, so we just return a no-op
-    () => () => {},
-    // Get client snapshot
-    () => loadData(),
-    // Get server snapshot (always null during SSR)
-    () => null
-  );
-}
-
 export default function UploadPage() {
   const router = useRouter();
-  const storedData = useStoredData();
 
-  const [parseResult, setParseResult] = useState<ParseResult | null>(() => {
-    // This initializer runs once on mount
-    if (typeof window !== 'undefined') {
-      const data = loadData();
-      if (data) {
-        return { data: data.csvData, headers: data.headers };
+  const [isLoading, setIsLoading] = useState(true);
+  const [storedData, setStoredData] = useState<StoredData | null>(null);
+  const [parseResult, setParseResult] = useState<ParseResult | null>(null);
+  const [existingMapping, setExistingMapping] = useState<ColumnMapping | null>(null);
+  const [showUploader, setShowUploader] = useState(true);
+
+  // Load existing data from IndexedDB on mount
+  useEffect(() => {
+    async function loadExistingData() {
+      try {
+        const data = await loadData();
+        if (data) {
+          setStoredData(data);
+          setParseResult({ data: data.csvData, headers: data.headers });
+          setExistingMapping(data.mapping);
+          setShowUploader(false);
+        }
+      } catch (error) {
+        console.error('Failed to load existing data:', error);
+      } finally {
+        setIsLoading(false);
       }
     }
-    return null;
-  });
 
-  const [existingMapping, setExistingMapping] = useState<ColumnMapping | null>(() => {
-    if (typeof window !== 'undefined') {
-      const data = loadData();
-      return data?.mapping || null;
-    }
-    return null;
-  });
-
-  const [showUploader, setShowUploader] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !loadData();
-    }
-    return true;
-  });
+    loadExistingData();
+  }, []);
 
   const handleUploadComplete = useCallback((result: ParseResult) => {
     setParseResult(result);
@@ -63,10 +52,10 @@ export default function UploadPage() {
   }, []);
 
   const handleMappingComplete = useCallback(
-    (mapping: ColumnMapping) => {
+    async (mapping: ColumnMapping) => {
       if (parseResult) {
-        // Save complete data to localStorage
-        saveData(parseResult.data, parseResult.headers, mapping);
+        // Save complete data to IndexedDB
+        await saveData(parseResult.data, parseResult.headers, mapping);
         // Navigate to worksheet
         router.push('/worksheet');
       }
@@ -79,6 +68,19 @@ export default function UploadPage() {
     setParseResult(null);
     setExistingMapping(null);
   }, []);
+
+  // Show loading state while checking for existing data
+  if (isLoading) {
+    return (
+      <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.50' }}>
+        <AppBar />
+        <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
+          <CircularProgress />
+          <Typography sx={{ mt: 2 }}>Loading...</Typography>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.50' }}>
