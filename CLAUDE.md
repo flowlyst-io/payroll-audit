@@ -543,6 +543,31 @@ git branch -d hotfix/PA-456-critical-fix
 
 Maintain CHANGELOG.md following Keep a Changelog format (keepachangelog.com) and Semantic Versioning (semver.org).
 
+### Changelog Philosophy
+
+CHANGELOG.md is **user-facing communication**, not a commit log.
+
+**Ask before adding any entry:**
+- "Would someone **using** this app notice this change?"
+- "Would someone **integrating** with this API need to update their code?"
+- "Would someone **deploying** this app need to configure something new?"
+
+**If all answers are NO → Skip it.**
+
+**Include:**
+- ✅ New features users can see/use
+- ✅ Bug fixes that affected user experience
+- ✅ API changes requiring integrator updates
+- ✅ New configuration requirements for operators
+- ✅ Performance improvements users experience
+
+**Exclude:**
+- ❌ Internal refactors or code restructuring
+- ❌ File/component renames
+- ❌ Code cleanup and reorganization
+- ❌ CSS class name changes (unless visual change)
+- ❌ Documentation updates (unless user-facing)
+
 ### During Feature Development
 
 Work freely without updating CHANGELOG.md. Experimental changes, reverts, and iterations happen naturally during development.
