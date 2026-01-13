@@ -2,7 +2,12 @@
 
 import { useCallback } from 'react';
 import Box from '@mui/material/Box';
-import { DataGrid, type GridColDef, type GridRowModel } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridToolbar,
+  type GridColDef,
+  type GridRowModel,
+} from '@mui/x-data-grid';
 import { formatCurrency, formatDelta, formatPercent } from '@/utils/formatters';
 import type { ComparisonRow } from '@/types';
 
@@ -90,7 +95,7 @@ export default function ComparisonGrid({
     <Box
       sx={{
         width: '100%',
-        height: 600,
+        height: '100%',
         '& .highlight-different': {
           backgroundColor: 'warning.light',
           fontWeight: 'bold',
@@ -103,6 +108,12 @@ export default function ComparisonGrid({
         getRowId={(row) => row.employeeKey}
         processRowUpdate={processRowUpdate}
         disableRowSelectionOnClick
+        slots={{ toolbar: GridToolbar }}
+        slotProps={{
+          toolbar: {
+            showQuickFilter: true,
+          },
+        }}
         initialState={{
           pagination: {
             paginationModel: { pageSize: 25 },

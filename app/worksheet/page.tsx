@@ -171,11 +171,29 @@ export default function WorksheetPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.50' }}>
+    <Box
+      sx={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        backgroundColor: 'grey.50',
+      }}
+    >
       <AppBar />
 
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+      {/* Main content area - fills remaining height */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          px: 3,
+          py: 2,
+        }}
+      >
+        <Typography variant="h5" component="h1" gutterBottom>
           Payroll Comparison Worksheet
         </Typography>
 
@@ -187,7 +205,7 @@ export default function WorksheetPage() {
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: 2,
-            mb: 3,
+            mb: 2,
           }}
         >
           <PayPeriodSelector
@@ -208,9 +226,11 @@ export default function WorksheetPage() {
           </Button>
         </Box>
 
-        {/* DataGrid */}
+        {/* DataGrid - fills remaining space */}
         {comparisonRows.length > 0 ? (
-          <ComparisonGrid rows={comparisonRows} onRowUpdate={handleRowUpdate} />
+          <Box sx={{ flex: 1, minHeight: 0 }}>
+            <ComparisonGrid rows={comparisonRows} onRowUpdate={handleRowUpdate} />
+          </Box>
         ) : (
           <Box sx={{ textAlign: 'center', py: 8 }}>
             <Typography color="text.secondary">
@@ -218,23 +238,23 @@ export default function WorksheetPage() {
             </Typography>
           </Box>
         )}
+      </Box>
 
-        {/* Success/Error Snackbar */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={4000}
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
           onClose={handleSnackbarClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          severity={snackbar.severity}
+          variant="filled"
         >
-          <Alert
-            onClose={handleSnackbarClose}
-            severity={snackbar.severity}
-            variant="filled"
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      </Container>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
