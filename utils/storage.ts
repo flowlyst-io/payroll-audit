@@ -155,20 +155,6 @@ export async function loadSnapshots(): Promise<ComparisonSnapshot[]> {
 }
 
 /**
- * Get a single snapshot by ID
- */
-export async function getSnapshot(id: string): Promise<ComparisonSnapshot | null> {
-  try {
-    const db = await getDB();
-    const snapshot = await db.get(SNAPSHOTS_STORE, id);
-    return snapshot || null;
-  } catch (error) {
-    console.error('Failed to get snapshot:', error);
-    return null;
-  }
-}
-
-/**
  * Delete a snapshot by ID
  */
 export async function deleteSnapshot(id: string): Promise<void> {

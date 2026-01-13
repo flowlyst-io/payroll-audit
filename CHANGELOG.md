@@ -9,8 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Saved comparisons page redesigned with side-by-side master-detail layout (PA-6)
 - Notes editing now activates with single-click instead of double-click (PA-5)
 - Arrow keys (↑↓) navigate between note cells while editing (PA-5)
+
+### Removed
+
+- Standalone snapshot view page replaced by inline panel (PA-6)
 
 ## [0.4.0] - 2026-01-13
 
