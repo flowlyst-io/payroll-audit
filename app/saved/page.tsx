@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -17,33 +16,25 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DownloadIcon from '@mui/icons-material/Download';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import AppBar from '@/components/AppBar';
+import ComparisonGrid from '@/components/ComparisonGrid';
 import { loadSnapshots, deleteSnapshot } from '@/utils/storage';
+import { exportComparisonCsv } from '@/utils/exportCsv';
 import type { ComparisonSnapshot } from '@/types';
 
-/**
- * Format date for display
- */
-function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  }).format(date);
-}
+const LEFT_PANEL_WIDTH = 280;
 
 export default function SavedComparisonsPage() {
-  const router = useRouter();
-
   const [snapshots, setSnapshots] = useState<ComparisonSnapshot[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<ComparisonSnapshot | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Derived state
+  const selectedSnapshot = snapshots.find((s) => s.id === selectedId) ?? null;
 
   // Load snapshots on mount
   useEffect(() => {
@@ -53,6 +44,10 @@ export default function SavedComparisonsPage() {
         // Sort by date, newest first
         data.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
         setSnapshots(data);
+        // Auto-select first snapshot
+        if (data.length > 0) {
+          setSelectedId(data[0].id);
+        }
       } catch (error) {
         console.error('Failed to load snapshots:', error);
       } finally {
@@ -63,18 +58,29 @@ export default function SavedComparisonsPage() {
     loadData();
   }, []);
 
-  // Navigate to snapshot view
-  const handleViewSnapshot = useCallback(
-    (id: string) => {
-      router.push(`/worksheet/${id}`);
-    },
-    [router]
-  );
+  // Handle snapshot selection
+  const handleSelectSnapshot = useCallback((id: string) => {
+    setSelectedId(id);
+  }, []);
+
+  // Handle export CSV
+  const handleExport = useCallback(() => {
+    if (!selectedSnapshot || selectedSnapshot.data.length === 0) return;
+    exportComparisonCsv(
+      selectedSnapshot.data,
+      selectedSnapshot.priorPeriod,
+      selectedSnapshot.currentPeriod
+    );
+  }, [selectedSnapshot]);
 
   // Open delete confirmation dialog
-  const handleDeleteClick = useCallback((snapshot: ComparisonSnapshot) => {
-    setDeleteTarget(snapshot);
-  }, []);
+  const handleDeleteClick = useCallback(
+    (e: React.MouseEvent, snapshot: ComparisonSnapshot) => {
+      e.stopPropagation();
+      setDeleteTarget(snapshot);
+    },
+    []
+  );
 
   // Close delete dialog
   const handleDeleteCancel = useCallback(() => {
@@ -88,100 +94,191 @@ export default function SavedComparisonsPage() {
     setIsDeleting(true);
     try {
       await deleteSnapshot(deleteTarget.id);
-      setSnapshots((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+      const updatedSnapshots = snapshots.filter((s) => s.id !== deleteTarget.id);
+      setSnapshots(updatedSnapshots);
+
+      // If deleted snapshot was selected, select first remaining or null
+      if (selectedId === deleteTarget.id) {
+        setSelectedId(updatedSnapshots.length > 0 ? updatedSnapshots[0].id : null);
+      }
+
       setDeleteTarget(null);
     } catch (error) {
       console.error('Failed to delete snapshot:', error);
     } finally {
       setIsDeleting(false);
     }
-  }, [deleteTarget]);
+  }, [deleteTarget, snapshots, selectedId]);
 
   // Loading state
   if (isLoading) {
     return (
-      <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.50' }}>
+      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
         <AppBar />
-        <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
           <CircularProgress />
-          <Typography sx={{ mt: 2 }}>Loading saved comparisons...</Typography>
-        </Container>
+          <Typography>Loading saved comparisons...</Typography>
+        </Box>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: 'grey.50' }}>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <AppBar />
 
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Saved Comparisons
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          View and manage your saved pay period comparison snapshots.
-        </Typography>
+      <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        {/* Left Panel - Comparison List */}
+        <Box
+          sx={{
+            width: LEFT_PANEL_WIDTH,
+            flexShrink: 0,
+            borderRight: 1,
+            borderColor: 'divider',
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: 'background.paper',
+          }}
+        >
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+            <Typography variant="h6">Saved Comparisons</Typography>
+          </Box>
 
-        {snapshots.length === 0 ? (
-          // Empty state
-          <Box
-            sx={{
-              textAlign: 'center',
-              py: 8,
-              px: 4,
-              backgroundColor: 'background.paper',
-              borderRadius: 2,
-              border: '1px dashed',
-              borderColor: 'divider',
-            }}
-          >
-            <FolderOpenIcon sx={{ fontSize: 64, color: 'action.disabled', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No Saved Comparisons
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Save a comparison from the Worksheet page to see it here.
-            </Typography>
-            <Button variant="contained" onClick={() => router.push('/worksheet')}>
-              Go to Worksheet
-            </Button>
-          </Box>
-        ) : (
-          // Snapshots list
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {snapshots.map((snapshot) => (
-              <Card key={snapshot.id} variant="outlined">
-                <CardContent
-                  sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
-                  onClick={() => handleViewSnapshot(snapshot.id)}
+          {snapshots.length === 0 ? (
+            <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
+              <Typography variant="body2">No saved comparisons</Typography>
+            </Box>
+          ) : (
+            <List sx={{ flex: 1, overflow: 'auto', py: 0 }}>
+              {snapshots.map((snapshot) => (
+                <ListItemButton
+                  key={snapshot.id}
+                  selected={selectedId === snapshot.id}
+                  onClick={() => handleSelectSnapshot(snapshot.id)}
+                  sx={{
+                    '&:hover .delete-button': {
+                      opacity: 1,
+                    },
+                  }}
                 >
-                  <Typography variant="h6" component="div">
-                    {snapshot.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Saved: {formatDate(snapshot.savedAt)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {snapshot.data.length} employee{snapshot.data.length !== 1 ? 's' : ''}
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'flex-end', pt: 0 }}>
-                  <IconButton
-                    aria-label="delete"
-                    color="error"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick(snapshot);
+                  <ListItemText
+                    primary={snapshot.name}
+                    primaryTypographyProps={{
+                      noWrap: true,
+                      title: snapshot.name,
                     }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            ))}
-          </Box>
-        )}
-      </Container>
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      className="delete-button"
+                      edge="end"
+                      aria-label="delete"
+                      size="small"
+                      onClick={(e) => handleDeleteClick(e, snapshot)}
+                      sx={{
+                        opacity: 0,
+                        transition: 'opacity 0.2s',
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItemButton>
+              ))}
+            </List>
+          )}
+        </Box>
+
+        {/* Right Panel - Comparison Worksheet */}
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            backgroundColor: 'grey.50',
+          }}
+        >
+          {!selectedSnapshot ? (
+            // Empty state
+            <Box
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                p: 4,
+              }}
+            >
+              <FolderOpenIcon sx={{ fontSize: 64, color: 'action.disabled', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No Comparison Selected
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {snapshots.length === 0
+                  ? 'Save a comparison from the Worksheet page to see it here.'
+                  : 'Select a comparison from the list to view it.'}
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              {/* Header with name and export button */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  p: 2,
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  backgroundColor: 'background.paper',
+                }}
+              >
+                <Typography variant="h6" noWrap sx={{ flex: 1, mr: 2 }}>
+                  {selectedSnapshot.name}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<DownloadIcon />}
+                  onClick={handleExport}
+                  disabled={selectedSnapshot.data.length === 0}
+                >
+                  Export CSV
+                </Button>
+              </Box>
+
+              {/* Comparison Grid */}
+              {selectedSnapshot.data.length > 0 ? (
+                <Box sx={{ flex: 1, minHeight: 0, p: 2 }}>
+                  <ComparisonGrid rows={selectedSnapshot.data} onRowUpdate={() => {}} readOnly />
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography color="text.secondary">No data in this comparison.</Typography>
+                </Box>
+              )}
+            </>
+          )}
+        </Box>
+      </Box>
 
       {/* Delete Confirmation Dialog */}
       <Dialog
@@ -190,7 +287,7 @@ export default function SavedComparisonsPage() {
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogTitle id="delete-dialog-title">Delete Snapshot?</DialogTitle>
+        <DialogTitle id="delete-dialog-title">Delete Comparison?</DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
             Are you sure you want to delete &quot;{deleteTarget?.name}&quot;? This action cannot be
