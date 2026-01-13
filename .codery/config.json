@@ -3,6 +3,9 @@
   "mainBranch": "main",
   "gitWorkflowType": "gitflow",
   "jiraIntegrationType": "cli",
-  "applicationDocs": [],
+  "applicationDocs": [
+    "docs/ENGINEERING_GUIDE.md",
+    "docs/prd_payperiod_demo.md"
+  ],
   "developBranch": "develop"
 }

@@ -13,11 +13,15 @@ If ticket ID provided as $ARGUMENTS, include it in the changelog entries.
 ## Process
 
 1. **Verify location**: Confirm on feature/bugfix branch (not main/develop)
-2. **Analyze changes**:
-   - Get commits since branch diverged: `git log $(git merge-base HEAD develop)..HEAD` (or main for trunk-based)
-   - Parse conventional commit messages (feat:, fix:, etc.)
+2. **Analyze user-facing changes**:
+   - Get commits since branch diverged: `git log $(git merge-base HEAD develop)..HEAD`
+   - Review actual file changes: `git diff develop...HEAD`
+   - **Apply changelog philosophy** (see GitFlow.md):
+     - Would users/integrators/operators notice this change?
+     - If NO → exclude from changelog (even if commit says "feat:")
+   - Parse conventional commit messages for context only
    - Extract JIRA ticket references
-   - Categorize into Keep a Changelog sections
+   - Categorize only user-impacting changes into Keep a Changelog sections
 3. **Read current CHANGELOG.md**: Check existing Unreleased section
 4. **Present findings**: Show categorized changes to user for approval
 5. **Update CHANGELOG.md**: Add to Unreleased section using Edit tool
