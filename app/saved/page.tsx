@@ -261,6 +261,7 @@ export default function SavedComparisonsPage() {
               {/* Comparison Grid */}
               {selectedSnapshot.data.length > 0 ? (
                 <Box sx={{ flex: 1, minHeight: 0, p: 2 }}>
+                  {/* onRowUpdate is a no-op because grid is readOnly; required by component interface */}
                   <ComparisonGrid rows={selectedSnapshot.data} onRowUpdate={() => {}} readOnly />
                 </Box>
               ) : (
