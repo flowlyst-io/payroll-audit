@@ -61,7 +61,7 @@ export default function ComparisonGrid({
       params: GridCellParams,
       event: React.KeyboardEvent<HTMLElement> & { defaultMuiPrevented?: boolean }
     ) => {
-      if (params.field !== 'note') return;
+      if (params.field !== 'note' || readOnly) return;
       if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
 
       // Prevent default grid behavior
@@ -83,7 +83,7 @@ export default function ComparisonGrid({
         [nextRowId]: { note: { mode: GridCellModes.Edit } },
       });
     },
-    [rows]
+    [rows, readOnly]
   );
 
   const columns: GridColDef<ComparisonRow>[] = [
