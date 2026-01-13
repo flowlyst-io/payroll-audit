@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-13
+
+### Added
+
+- Worksheet page for pay period comparison (PA-3)
+- Pay period selector dropdowns to choose prior and current periods (PA-3)
+- Comparison table with MUI X DataGrid including sorting, filtering, and pagination (PA-3)
+- Visual highlighting for rows where amounts differ between pay periods (PA-3)
+- Inline note editing directly in the data grid (PA-3)
+- Year-to-date calculation for each employee through current period (PA-3)
+- Delta and delta percentage columns showing changes between periods (PA-3)
+- Snapshot saving to preserve comparison state with notes (PA-3)
+- Quick filter toolbar for searching across all columns (PA-3)
+- Column visibility toggle to show/hide columns (PA-3)
+
 ## [0.2.0] - 2026-01-12
 
 ### Added
