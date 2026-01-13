@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-13
+
+### Added
+
+- Saved comparisons list page to view and manage snapshots (PA-4)
+- Read-only snapshot viewing with preserved comparison data (PA-4)
+- Delete saved snapshots with confirmation dialog (PA-4)
+- CSV export functionality for comparison data (PA-4)
+- Empty state UI for saved comparisons page (PA-4)
+
 ## [0.3.0] - 2026-01-13
 
 ### Added
