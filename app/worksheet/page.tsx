@@ -10,12 +10,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import SaveIcon from '@mui/icons-material/Save';
+import DownloadIcon from '@mui/icons-material/Download';
 import AppBar from '@/components/AppBar';
 import PayPeriodSelector from '@/components/PayPeriodSelector';
 import ComparisonGrid from '@/components/ComparisonGrid';
 import { loadData, saveSnapshot } from '@/utils/storage';
 import { getUniquePayPeriods, buildComparisonRows } from '@/utils/calculations';
 import { generateSnapshotName } from '@/utils/formatters';
+import { exportComparisonCsv } from '@/utils/exportCsv';
 import type { StoredData, ComparisonRow, ComparisonSnapshot } from '@/types';
 
 export default function WorksheetPage() {
@@ -145,6 +147,12 @@ export default function WorksheetPage() {
     setSnackbar((prev) => ({ ...prev, open: false }));
   }, []);
 
+  // Handle export CSV
+  const handleExport = useCallback(() => {
+    if (comparisonRows.length === 0 || !priorPeriod || !currentPeriod) return;
+    exportComparisonCsv(comparisonRows, priorPeriod, currentPeriod);
+  }, [comparisonRows, priorPeriod, currentPeriod]);
+
   // Loading state
   if (isLoading) {
     return (
@@ -216,14 +224,24 @@ export default function WorksheetPage() {
             onCurrentChange={setCurrentPeriod}
           />
 
-          <Button
-            variant="contained"
-            startIcon={<SaveIcon />}
-            onClick={handleSaveSnapshot}
-            disabled={isSaving || comparisonRows.length === 0}
-          >
-            {isSaving ? 'Saving...' : 'Save Snapshot'}
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={handleExport}
+              disabled={comparisonRows.length === 0}
+            >
+              Export CSV
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<SaveIcon />}
+              onClick={handleSaveSnapshot}
+              disabled={isSaving || comparisonRows.length === 0}
+            >
+              {isSaving ? 'Saving...' : 'Save Snapshot'}
+            </Button>
+          </Box>
         </Box>
 
         {/* DataGrid - fills remaining space */}
