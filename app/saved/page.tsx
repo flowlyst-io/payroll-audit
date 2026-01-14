@@ -15,11 +15,14 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import AppBar from '@/components/AppBar';
 import ComparisonGrid from '@/components/ComparisonGrid';
+import AiInsightsButton from '@/components/AiInsightsButton';
 import { loadSnapshots, deleteSnapshot } from '@/utils/storage';
 import { exportComparisonCsv } from '@/utils/exportCsv';
 import type { ComparisonSnapshot } from '@/types';
@@ -32,6 +35,11 @@ export default function SavedComparisonsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<ComparisonSnapshot | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({ open: false, message: '', severity: 'error' });
 
   // Derived state
   const selectedSnapshot = snapshots.find((s) => s.id === selectedId) ?? null;
@@ -109,6 +117,20 @@ export default function SavedComparisonsPage() {
       setIsDeleting(false);
     }
   }, [deleteTarget, snapshots, selectedId]);
+
+  // Handle AI Insights error
+  const handleAiError = useCallback((message: string) => {
+    setSnackbar({
+      open: true,
+      message,
+      severity: 'error',
+    });
+  }, []);
+
+  // Handle snackbar close
+  const handleSnackbarClose = useCallback(() => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  }, []);
 
   // Loading state
   if (isLoading) {
@@ -247,15 +269,24 @@ export default function SavedComparisonsPage() {
                 <Typography variant="h6" noWrap sx={{ flex: 1, mr: 2 }}>
                   {selectedSnapshot.name}
                 </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<DownloadIcon />}
-                  onClick={handleExport}
-                  disabled={selectedSnapshot.data.length === 0}
-                >
-                  Export CSV
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<DownloadIcon />}
+                    onClick={handleExport}
+                    disabled={selectedSnapshot.data.length === 0}
+                  >
+                    Export CSV
+                  </Button>
+                  <AiInsightsButton
+                    rows={selectedSnapshot.data}
+                    priorPeriod={selectedSnapshot.priorPeriod}
+                    currentPeriod={selectedSnapshot.currentPeriod}
+                    disabled={selectedSnapshot.data.length === 0}
+                    onError={handleAiError}
+                  />
+                </Box>
               </Box>
 
               {/* Comparison Grid */}
@@ -304,6 +335,22 @@ export default function SavedComparisonsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          variant="filled"
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

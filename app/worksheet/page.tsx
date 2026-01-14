@@ -14,6 +14,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import AppBar from '@/components/AppBar';
 import PayPeriodSelector from '@/components/PayPeriodSelector';
 import ComparisonGrid, { type ComparisonGridRef } from '@/components/ComparisonGrid';
+import AiInsightsButton from '@/components/AiInsightsButton';
 import { loadData, saveSnapshot } from '@/utils/storage';
 import { getUniquePayPeriods, buildComparisonRows } from '@/utils/calculations';
 import { generateSnapshotName } from '@/utils/formatters';
@@ -159,6 +160,15 @@ export default function WorksheetPage() {
     setSnackbar((prev) => ({ ...prev, open: false }));
   }, []);
 
+  // Handle AI Insights error
+  const handleAiError = useCallback((message: string) => {
+    setSnackbar({
+      open: true,
+      message,
+      severity: 'error',
+    });
+  }, []);
+
   // Handle export CSV
   const handleExport = useCallback(() => {
     if (comparisonRows.length === 0 || !priorPeriod || !currentPeriod) return;
@@ -265,6 +275,13 @@ export default function WorksheetPage() {
             >
               {isSaving ? 'Saving...' : 'Save Snapshot'}
             </Button>
+            <AiInsightsButton
+              rows={comparisonRows}
+              priorPeriod={priorPeriod}
+              currentPeriod={currentPeriod}
+              disabled={comparisonRows.length === 0}
+              onError={handleAiError}
+            />
           </Box>
         </Box>
 
