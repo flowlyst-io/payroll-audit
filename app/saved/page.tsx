@@ -147,9 +147,18 @@ export default function SavedComparisonsPage() {
     setIsAiLoading(loading);
   }, []);
 
-  const handleAiInsightsClose = useCallback(() => {
+  // Close and delete stored AI insight (PA-14)
+  const handleAiInsightsClose = useCallback(async () => {
     setAiInsights(null);
-  }, []);
+    if (selectedId) {
+      // Delete from IndexedDB
+      await updateSnapshotAiInsight(selectedId, null);
+      // Update local state
+      setSnapshots((prev) =>
+        prev.map((s) => (s.id === selectedId ? { ...s, aiInsight: undefined } : s))
+      );
+    }
+  }, [selectedId]);
 
   // Handle AI Insights error
   const handleAiError = useCallback((message: string) => {
