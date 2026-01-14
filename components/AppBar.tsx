@@ -14,6 +14,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  { label: 'Dashboard', href: '/' },
   { label: 'Upload', href: '/upload' },
   { label: 'Worksheet', href: '/worksheet' },
   { label: 'Saved Comparisons', href: '/saved' },
@@ -35,7 +36,11 @@ export default function AppBar() {
 
         <Box sx={{ flexGrow: 1, display: 'flex', gap: 1 }}>
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            // Special handling for root path to avoid matching all routes
+            const isActive =
+              item.href === '/'
+                ? pathname === '/'
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
             return (
               <Button
