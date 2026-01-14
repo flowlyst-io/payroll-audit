@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-01-14
+
 ### Added
 
 - AI Insights button to analyze comparison data for anomalies (PA-12)
