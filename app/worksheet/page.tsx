@@ -137,6 +137,7 @@ export default function WorksheetPage() {
         currentPeriod,
         data: rowsToSave,
         savedAt: new Date().toISOString(),
+        aiInsight: aiInsights ?? undefined,
       };
 
       await saveSnapshot(snapshot);
@@ -156,7 +157,7 @@ export default function WorksheetPage() {
     } finally {
       setIsSaving(false);
     }
-  }, [priorPeriod, currentPeriod, comparisonRows]);
+  }, [priorPeriod, currentPeriod, comparisonRows, aiInsights]);
 
   // Handle snackbar close
   const handleSnackbarClose = useCallback(() => {

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-01-14
+
+### Added
+
+- AI Insights generated on Worksheet are now saved with comparison snapshots
+
+### Changed
+
+- AI Insights display with proper Markdown formatting (bold, lists, paragraphs)
+
+### Fixed
+
+- 500 error when generating AI Insights with null numeric fields
+
 ## [0.8.0] - 2026-01-14
 
 ### Added
