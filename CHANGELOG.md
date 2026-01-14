@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Worksheet now defaults to last two pay periods instead of first two (PA-8)
 - Saved comparisons page redesigned with side-by-side master-detail layout (PA-6)
 - Notes editing now activates with single-click instead of double-click (PA-5)
 - Arrow keys (↑↓) navigate between note cells while editing (PA-5)

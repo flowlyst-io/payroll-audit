@@ -71,11 +71,11 @@ export default function WorksheetPage() {
     return getUniquePayPeriods(storedData.csvData, storedData.mapping);
   }, [storedData]);
 
-  // Initialize pay period selection when data loads
+  // Initialize pay period selection when data loads (default to last two periods)
   useEffect(() => {
     if (payPeriods.length >= 2 && !priorPeriod && !currentPeriod) {
-      setPriorPeriod(payPeriods[0]);
-      setCurrentPeriod(payPeriods[1]);
+      setPriorPeriod(payPeriods[payPeriods.length - 2]);
+      setCurrentPeriod(payPeriods[payPeriods.length - 1]);
     } else if (payPeriods.length === 1 && !priorPeriod && !currentPeriod) {
       setPriorPeriod(payPeriods[0]);
       setCurrentPeriod(payPeriods[0]);
