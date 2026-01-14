@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- AI Insights button to analyze comparison data for anomalies (PA-12)
+- OpenAI integration via server-side API route for secure API key handling (PA-12)
+- Inline insights panel with auto-adjusting data grid height (PA-12)
+- Loading and error states for AI analysis requests (PA-12)
+
 ## [0.6.0] - 2026-01-13
 
 ### Added
