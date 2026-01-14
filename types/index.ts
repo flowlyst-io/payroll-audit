@@ -54,6 +54,7 @@ export interface ComparisonSnapshot {
   currentPeriod: string; // Selected current pay period
   data: ComparisonRow[]; // Snapshot of comparison data
   savedAt: string; // ISO timestamp
+  aiInsight?: string; // Persisted AI analysis (PA-14)
 }
 
 /**

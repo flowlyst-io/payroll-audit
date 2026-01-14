@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-01-14
+
+### Added
+
+- AI Insights now persist with saved comparisons in IndexedDB (PA-14)
+- Opening a saved comparison automatically displays stored AI analysis (PA-14)
+- Close button permanently removes stored AI insight (PA-14)
+
 ## [0.7.0] - 2026-01-14
 
 ### Added
