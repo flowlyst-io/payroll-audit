@@ -252,7 +252,7 @@ export default function WorksheetPage() {
             <Button
               variant="outlined"
               startIcon={<DownloadIcon />}
-              onClick={handleExport}
+              onMouseDown={handleExport}
               disabled={comparisonRows.length === 0}
             >
               Export CSV
@@ -260,7 +260,7 @@ export default function WorksheetPage() {
             <Button
               variant="contained"
               startIcon={<SaveIcon />}
-              onClick={handleSaveSnapshot}
+              onMouseDown={handleSaveSnapshot}
               disabled={isSaving || comparisonRows.length === 0}
             >
               {isSaving ? 'Saving...' : 'Save Snapshot'}
