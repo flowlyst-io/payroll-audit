@@ -24,7 +24,7 @@ import AppBar from '@/components/AppBar';
 import ComparisonGrid from '@/components/ComparisonGrid';
 import AiInsightsButton from '@/components/AiInsightsButton';
 import InlineInsights from '@/components/InlineInsights';
-import { loadSnapshots, deleteSnapshot } from '@/utils/storage';
+import { loadSnapshots, deleteSnapshot, updateSnapshotAiInsight } from '@/utils/storage';
 import { exportComparisonCsv } from '@/utils/exportCsv';
 import type { ComparisonSnapshot } from '@/types';
 
@@ -55,9 +55,10 @@ export default function SavedComparisonsPage() {
         // Sort by date, newest first
         data.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
         setSnapshots(data);
-        // Auto-select first snapshot
+        // Auto-select first snapshot and load its AI insight if exists (PA-14)
         if (data.length > 0) {
           setSelectedId(data[0].id);
+          setAiInsights(data[0].aiInsight ?? null);
         }
       } catch (error) {
         console.error('Failed to load snapshots:', error);
@@ -69,11 +70,15 @@ export default function SavedComparisonsPage() {
     loadData();
   }, []);
 
-  // Handle snapshot selection
-  const handleSelectSnapshot = useCallback((id: string) => {
-    setSelectedId(id);
-    setAiInsights(null); // Clear insights when switching snapshots
-  }, []);
+  // Handle snapshot selection - load stored AI insight if exists (PA-14)
+  const handleSelectSnapshot = useCallback(
+    (id: string) => {
+      setSelectedId(id);
+      const snapshot = snapshots.find((s) => s.id === id);
+      setAiInsights(snapshot?.aiInsight ?? null);
+    },
+    [snapshots]
+  );
 
   // Handle export CSV
   const handleExport = useCallback(() => {
@@ -122,10 +127,21 @@ export default function SavedComparisonsPage() {
     }
   }, [deleteTarget, snapshots, selectedId]);
 
-  // Handle AI Insights
-  const handleAiInsightsReceived = useCallback((insights: string) => {
-    setAiInsights(insights);
-  }, []);
+  // Handle AI Insights - persist to IndexedDB (PA-14)
+  const handleAiInsightsReceived = useCallback(
+    async (insights: string) => {
+      setAiInsights(insights);
+      if (selectedId) {
+        // Persist to IndexedDB
+        await updateSnapshotAiInsight(selectedId, insights);
+        // Update local state so insight persists when switching snapshots
+        setSnapshots((prev) =>
+          prev.map((s) => (s.id === selectedId ? { ...s, aiInsight: insights } : s))
+        );
+      }
+    },
+    [selectedId]
+  );
 
   const handleAiLoadingChange = useCallback((loading: boolean) => {
     setIsAiLoading(loading);

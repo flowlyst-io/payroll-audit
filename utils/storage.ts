@@ -184,6 +184,27 @@ export async function deleteSnapshot(id: string): Promise<void> {
 }
 
 /**
+ * Update the AI insight for a snapshot (PA-14)
+ * Performs a targeted update of just the aiInsight field
+ */
+export async function updateSnapshotAiInsight(
+  id: string,
+  aiInsight: string | null
+): Promise<void> {
+  try {
+    const db = await getDB();
+    const snapshot = await db.get(SNAPSHOTS_STORE, id);
+    if (snapshot) {
+      snapshot.aiInsight = aiInsight ?? undefined;
+      await db.put(SNAPSHOTS_STORE, snapshot);
+    }
+  } catch (error) {
+    console.error('Failed to update snapshot AI insight:', error);
+    throw new Error('Failed to save AI insight.');
+  }
+}
+
+/**
  * Clear all snapshots
  */
 export async function clearSnapshots(): Promise<void> {
