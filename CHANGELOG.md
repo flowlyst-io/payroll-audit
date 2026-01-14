@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-01-13
+
 ### Added
 
 - DAC/Department as 4th required column in column mapping (PA-7)
@@ -18,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Saved comparisons page redesigned with side-by-side master-detail layout (PA-6)
 - Notes editing now activates with single-click instead of double-click (PA-5)
 - Arrow keys (↑↓) navigate between note cells while editing (PA-5)
+
+### Fixed
+
+- Save Snapshot and Export CSV now capture notes being actively edited (PA-11)
 
 ### Removed
 

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import Box from '@mui/material/Box';
 import {
   DataGrid,
   GridToolbar,
   GridCellModes,
+  useGridApiRef,
   type GridColDef,
   type GridRowModel,
   type GridCellModesModel,
@@ -20,13 +21,31 @@ interface ComparisonGridProps {
   readOnly?: boolean;
 }
 
-export default function ComparisonGrid({
-  rows,
-  onRowUpdate,
-  readOnly = false,
-}: ComparisonGridProps) {
-  // Controlled cell modes for single-click editing
-  const [cellModesModel, setCellModesModel] = useState<GridCellModesModel>({});
+export interface ComparisonGridRef {
+  commitPendingEdits: () => void;
+}
+
+const ComparisonGrid = forwardRef<ComparisonGridRef, ComparisonGridProps>(
+  function ComparisonGrid({ rows, onRowUpdate, readOnly = false }, ref) {
+    const apiRef = useGridApiRef();
+
+    // Controlled cell modes for single-click editing
+    const [cellModesModel, setCellModesModel] = useState<GridCellModesModel>({});
+
+    // Expose method to commit any pending edits
+    useImperativeHandle(ref, () => ({
+      commitPendingEdits: () => {
+        if (!apiRef.current) return;
+        // Find any cells in Edit mode and stop editing (commits the value)
+        Object.entries(cellModesModel).forEach(([rowId, fields]) => {
+          Object.entries(fields).forEach(([field, modeInfo]) => {
+            if (modeInfo.mode === GridCellModes.Edit) {
+              apiRef.current?.stopCellEditMode({ id: rowId, field });
+            }
+          });
+        });
+      },
+    }));
 
   // Handle single-click to enter edit mode (note column only)
   const handleCellClick = useCallback(
@@ -167,6 +186,7 @@ export default function ComparisonGrid({
       }}
     >
       <DataGrid
+        apiRef={apiRef}
         rows={rows}
         columns={columns}
         getRowId={(row) => row.employeeKey}
@@ -196,4 +216,7 @@ export default function ComparisonGrid({
       />
     </Box>
   );
-}
+  }
+);
+
+export default ComparisonGrid;
