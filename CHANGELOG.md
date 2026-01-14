@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Notes editing now activates with single-click instead of double-click (PA-5)
 - Arrow keys (↑↓) navigate between note cells while editing (PA-5)
 
+### Fixed
+
+- Save Snapshot and Export CSV now capture notes being actively edited (PA-11)
+
 ### Removed
 
 - Standalone snapshot view page replaced by inline panel (PA-6)
