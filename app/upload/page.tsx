@@ -11,8 +11,55 @@ import CircularProgress from '@mui/material/CircularProgress';
 import AppBar from '@/components/AppBar';
 import CsvUpload from '@/components/CsvUpload';
 import ColumnMapper from '@/components/ColumnMapper';
-import { saveData, loadData } from '@/utils/storage';
-import type { ParseResult, ColumnMapping, StoredData } from '@/types';
+import {
+  saveData,
+  loadData,
+  saveColumnPreferences,
+  loadColumnPreferences,
+} from '@/utils/storage';
+import type {
+  ParseResult,
+  ColumnMapping,
+  StoredData,
+  SavedColumnPreferences,
+} from '@/types';
+
+/**
+ * Auto-select columns based on saved preferences
+ * Matches headers to preferences using exact or case-insensitive matching
+ */
+function autoSelectColumns(
+  headers: string[],
+  prefs: SavedColumnPreferences | null
+): Partial<ColumnMapping> {
+  if (!prefs) return {};
+
+  const result: Partial<ColumnMapping> = {};
+  const headerLower = headers.map((h) => h.toLowerCase());
+
+  // Helper to find matching header
+  const findMatch = (savedHeader: string | null): string | undefined => {
+    if (!savedHeader) return undefined;
+    // Exact match first
+    if (headers.includes(savedHeader)) return savedHeader;
+    // Case-insensitive match
+    const lowerIdx = headerLower.indexOf(savedHeader.toLowerCase());
+    if (lowerIdx !== -1) return headers[lowerIdx];
+    return undefined;
+  };
+
+  const employeeMatch = findMatch(prefs.employeeName);
+  const amountMatch = findMatch(prefs.amount);
+  const payPeriodMatch = findMatch(prefs.payPeriod);
+  const dacMatch = findMatch(prefs.dac);
+
+  if (employeeMatch) result.employeeName = employeeMatch;
+  if (amountMatch) result.amount = amountMatch;
+  if (payPeriodMatch) result.payPeriod = payPeriodMatch;
+  if (dacMatch) result.dac = dacMatch;
+
+  return result;
+}
 
 export default function UploadPage() {
   const router = useRouter();
@@ -22,11 +69,17 @@ export default function UploadPage() {
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
   const [existingMapping, setExistingMapping] = useState<ColumnMapping | null>(null);
   const [showUploader, setShowUploader] = useState(true);
+  const [savedPreferences, setSavedPreferences] = useState<SavedColumnPreferences | null>(null);
 
-  // Load existing data from IndexedDB on mount
+  // Load existing data and preferences from IndexedDB on mount
   useEffect(() => {
     async function loadExistingData() {
       try {
+        // Load saved column preferences (for auto-select)
+        const prefs = await loadColumnPreferences();
+        setSavedPreferences(prefs);
+
+        // Load existing data
         const data = await loadData();
         if (data) {
           setStoredData(data);
@@ -44,18 +97,32 @@ export default function UploadPage() {
     loadExistingData();
   }, []);
 
-  const handleUploadComplete = useCallback((result: ParseResult) => {
-    setParseResult(result);
-    setShowUploader(false);
-    // Clear existing mapping since this is new data
-    setExistingMapping(null);
-  }, []);
+  const handleUploadComplete = useCallback(
+    (result: ParseResult) => {
+      setParseResult(result);
+      setShowUploader(false);
+
+      // Auto-select columns based on saved preferences
+      const autoSelected = autoSelectColumns(result.headers, savedPreferences);
+      if (Object.keys(autoSelected).length > 0) {
+        // Create a partial mapping with auto-selected values
+        setExistingMapping(autoSelected as ColumnMapping);
+      } else {
+        setExistingMapping(null);
+      }
+    },
+    [savedPreferences]
+  );
 
   const handleMappingComplete = useCallback(
     async (mapping: ColumnMapping) => {
       if (parseResult) {
         // Save complete data to IndexedDB
         await saveData(parseResult.data, parseResult.headers, mapping);
+
+        // Save column preferences for future auto-select
+        await saveColumnPreferences(mapping);
+
         // Navigate to worksheet
         router.push('/worksheet');
       }

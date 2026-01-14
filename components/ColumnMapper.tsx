@@ -21,18 +21,20 @@ interface ColumnMapperProps {
   initialMapping?: ColumnMapping | null;
 }
 
-type MappingField = 'employeeName' | 'amount' | 'payPeriod';
+type MappingField = 'employeeName' | 'amount' | 'payPeriod' | 'dac';
 
 const fieldLabels: Record<MappingField, string> = {
   employeeName: 'Employee Name',
   amount: 'Amount',
   payPeriod: 'Pay Period',
+  dac: 'DAC / Department',
 };
 
 const fieldDescriptions: Record<MappingField, string> = {
   employeeName: 'Column containing employee names or IDs',
   amount: 'Column containing salary/payment amounts',
   payPeriod: 'Column containing pay period identifiers',
+  dac: 'Column containing department or DAC codes',
 };
 
 export default function ColumnMapper({
@@ -45,6 +47,7 @@ export default function ColumnMapper({
     employeeName: initialMapping?.employeeName || '',
     amount: initialMapping?.amount || '',
     payPeriod: initialMapping?.payPeriod || '',
+    dac: initialMapping?.dac || '',
   });
 
   const handleChange = (field: MappingField) => (event: SelectChangeEvent<string>) => {
@@ -73,11 +76,12 @@ export default function ColumnMapper({
         employeeName: mapping.employeeName,
         amount: mapping.amount,
         payPeriod: mapping.payPeriod,
+        dac: mapping.dac,
       });
     }
   };
 
-  const fields: MappingField[] = ['employeeName', 'amount', 'payPeriod'];
+  const fields: MappingField[] = ['employeeName', 'amount', 'payPeriod', 'dac'];
 
   return (
     <Paper variant="outlined" sx={{ p: 3 }}>
