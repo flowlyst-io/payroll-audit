@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- DAC/Department as 4th required column in column mapping (PA-7)
+- Auto-select columns based on previous mapping preferences (PA-7)
+
 ### Changed
 
 - Saved comparisons page redesigned with side-by-side master-detail layout (PA-6)
