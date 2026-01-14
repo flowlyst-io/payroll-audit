@@ -85,7 +85,7 @@ export async function POST(
 
   // Initialize OpenAI client
   const client = new OpenAI({ apiKey });
-  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  const model = process.env.OPENAI_MODEL || 'gpt-5-mini';
 
   // Build the prompt
   const systemPrompt = `You are a senior payroll auditor analyzing pay period comparison data for a school district.
@@ -116,8 +116,6 @@ Identify anomalies, significant changes, and items needing review. Be specific w
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      max_completion_tokens: 500,
-      temperature: 0.3, // Lower temperature for more focused, analytical output
     });
 
     const insights = completion.choices[0]?.message?.content;
