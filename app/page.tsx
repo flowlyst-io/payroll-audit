@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import DashboardContent from '@/components/DashboardContent';
 
 export default function Home() {
-  redirect('/upload');
+  return <DashboardContent />;
 }
