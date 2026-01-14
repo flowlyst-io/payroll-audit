@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Empty dashboard state with upload prompt when no data exists (PA-9)
 - Dashboard link in navigation bar (PA-9)
 
+### Fixed
+
+- Save Snapshot and Export CSV now correctly capture notes being actively edited (PA-11)
+
 ## [0.5.0] - 2026-01-13
 
 ### Added

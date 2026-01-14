@@ -22,7 +22,7 @@ interface ComparisonGridProps {
 }
 
 export interface ComparisonGridRef {
-  commitPendingEdits: () => void;
+  commitPendingEdits: () => Map<string, string>;
 }
 
 const ComparisonGrid = forwardRef<ComparisonGridRef, ComparisonGridProps>(
@@ -32,18 +32,28 @@ const ComparisonGrid = forwardRef<ComparisonGridRef, ComparisonGridProps>(
     // Controlled cell modes for single-click editing
     const [cellModesModel, setCellModesModel] = useState<GridCellModesModel>({});
 
-    // Expose method to commit any pending edits
+    // Expose method to commit any pending edits and return their values
     useImperativeHandle(ref, () => ({
       commitPendingEdits: () => {
-        if (!apiRef.current) return;
-        // Find any cells in Edit mode and stop editing (commits the value)
+        const pendingNotes = new Map<string, string>();
+        if (!apiRef.current) return pendingNotes;
+
+        // Find any cells in Edit mode, capture their values, then stop editing
         Object.entries(cellModesModel).forEach(([rowId, fields]) => {
           Object.entries(fields).forEach(([field, modeInfo]) => {
-            if (modeInfo.mode === GridCellModes.Edit) {
+            if (modeInfo.mode === GridCellModes.Edit && field === 'note') {
+              // Get the pending edit value BEFORE stopping edit mode
+              const updatedRow = apiRef.current?.getRowWithUpdatedValues(rowId, field);
+              if (updatedRow) {
+                pendingNotes.set(rowId, (updatedRow.note as string) ?? '');
+              }
+              // Now stop edit mode
               apiRef.current?.stopCellEditMode({ id: rowId, field });
             }
           });
         });
+
+        return pendingNotes;
       },
     }));
 
