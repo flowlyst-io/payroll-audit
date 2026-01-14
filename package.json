@@ -19,6 +19,7 @@
     "@mui/x-data-grid": "^8.24.0",
     "idb": "^8.0.3",
     "next": "^16.1.1",
+    "openai": "^6.16.0",
     "papaparse": "^5.5.3",
     "react": "19.2.0",
     "react-dom": "19.2.0"
