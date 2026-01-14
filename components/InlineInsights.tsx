@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ReactMarkdown from 'react-markdown';
 
 // AI Insights brand color and light shade for background
 const AI_INSIGHTS_COLOR = '#5F5AA2';
@@ -61,16 +62,21 @@ export default function InlineInsights({
           >
             AI Insights
           </Typography>
-          <Typography
-            variant="body2"
+          <Box
             sx={{
               color: 'text.primary',
               lineHeight: 1.7,
-              whiteSpace: 'pre-wrap',
+              '& p': { margin: '0.5em 0' },
+              '& p:first-of-type': { marginTop: 0 },
+              '& p:last-of-type': { marginBottom: 0 },
+              '& ul, & ol': { margin: '0.5em 0', paddingLeft: '1.5em' },
+              '& li': { marginBottom: '0.25em' },
+              '& strong': { fontWeight: 600 },
+              fontSize: '0.875rem',
             }}
           >
-            {insights}
-          </Typography>
+            <ReactMarkdown>{insights}</ReactMarkdown>
+          </Box>
         </Box>
         <IconButton
           size="small"
