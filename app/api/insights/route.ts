@@ -116,7 +116,7 @@ Identify anomalies, significant changes, and items needing review. Be specific w
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      max_tokens: 500,
+      max_completion_tokens: 500,
       temperature: 0.3, // Lower temperature for more focused, analytical output
     });
 
