@@ -34,11 +34,11 @@ function formatComparisonTable(rows: ComparisonRow[]): string {
   const separator = '---|---|---|---|---|---';
 
   const dataRows = rows.map((row) => {
-    const priorFormatted = `$${row.priorAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    const currentFormatted = `$${row.currentAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    const deltaFormatted = `$${row.delta.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    const deltaPercentFormatted = `${row.deltaPercent.toFixed(1)}%`;
-    const ytdFormatted = `$${row.yearToDate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const priorFormatted = `$${(row.priorAmount ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const currentFormatted = `$${(row.currentAmount ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const deltaFormatted = `$${(row.delta ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const deltaPercentFormatted = `${(row.deltaPercent ?? 0).toFixed(1)}%`;
+    const ytdFormatted = `$${(row.yearToDate ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
     return `${row.employeeName} | ${priorFormatted} | ${currentFormatted} | ${deltaFormatted} | ${deltaPercentFormatted} | ${ytdFormatted}`;
   });
