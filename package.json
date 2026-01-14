@@ -13,12 +13,14 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@google/genai": "^1.35.0",
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.5",
     "@mui/x-charts": "^8.24.0",
     "@mui/x-data-grid": "^8.24.0",
     "idb": "^8.0.3",
     "next": "^16.1.1",
+    "openai": "^6.16.0",
     "papaparse": "^5.5.3",
     "react": "19.2.0",
     "react-dom": "19.2.0"
