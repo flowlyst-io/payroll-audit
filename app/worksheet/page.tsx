@@ -15,6 +15,7 @@ import AppBar from '@/components/AppBar';
 import PayPeriodSelector from '@/components/PayPeriodSelector';
 import ComparisonGrid, { type ComparisonGridRef } from '@/components/ComparisonGrid';
 import AiInsightsButton from '@/components/AiInsightsButton';
+import InlineInsights from '@/components/InlineInsights';
 import { loadData, saveSnapshot } from '@/utils/storage';
 import { getUniquePayPeriods, buildComparisonRows } from '@/utils/calculations';
 import { generateSnapshotName } from '@/utils/formatters';
@@ -39,6 +40,8 @@ export default function WorksheetPage() {
 
   // UI state
   const [isSaving, setIsSaving] = useState(false);
+  const [aiInsights, setAiInsights] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -158,6 +161,19 @@ export default function WorksheetPage() {
   // Handle snackbar close
   const handleSnackbarClose = useCallback(() => {
     setSnackbar((prev) => ({ ...prev, open: false }));
+  }, []);
+
+  // Handle AI Insights
+  const handleAiInsightsReceived = useCallback((insights: string) => {
+    setAiInsights(insights);
+  }, []);
+
+  const handleAiLoadingChange = useCallback((loading: boolean) => {
+    setIsAiLoading(loading);
+  }, []);
+
+  const handleAiInsightsClose = useCallback(() => {
+    setAiInsights(null);
   }, []);
 
   // Handle AI Insights error
@@ -280,10 +296,18 @@ export default function WorksheetPage() {
               priorPeriod={priorPeriod}
               currentPeriod={currentPeriod}
               disabled={comparisonRows.length === 0}
+              isLoading={isAiLoading}
+              onInsightsReceived={handleAiInsightsReceived}
+              onLoadingChange={handleAiLoadingChange}
               onError={handleAiError}
             />
           </Box>
         </Box>
+
+        {/* AI Insights - inline display */}
+        {aiInsights && (
+          <InlineInsights insights={aiInsights} onClose={handleAiInsightsClose} />
+        )}
 
         {/* DataGrid - fills remaining space */}
         {comparisonRows.length > 0 ? (

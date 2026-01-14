@@ -23,6 +23,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import AppBar from '@/components/AppBar';
 import ComparisonGrid from '@/components/ComparisonGrid';
 import AiInsightsButton from '@/components/AiInsightsButton';
+import InlineInsights from '@/components/InlineInsights';
 import { loadSnapshots, deleteSnapshot } from '@/utils/storage';
 import { exportComparisonCsv } from '@/utils/exportCsv';
 import type { ComparisonSnapshot } from '@/types';
@@ -35,6 +36,8 @@ export default function SavedComparisonsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<ComparisonSnapshot | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [aiInsights, setAiInsights] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -69,6 +72,7 @@ export default function SavedComparisonsPage() {
   // Handle snapshot selection
   const handleSelectSnapshot = useCallback((id: string) => {
     setSelectedId(id);
+    setAiInsights(null); // Clear insights when switching snapshots
   }, []);
 
   // Handle export CSV
@@ -117,6 +121,19 @@ export default function SavedComparisonsPage() {
       setIsDeleting(false);
     }
   }, [deleteTarget, snapshots, selectedId]);
+
+  // Handle AI Insights
+  const handleAiInsightsReceived = useCallback((insights: string) => {
+    setAiInsights(insights);
+  }, []);
+
+  const handleAiLoadingChange = useCallback((loading: boolean) => {
+    setIsAiLoading(loading);
+  }, []);
+
+  const handleAiInsightsClose = useCallback(() => {
+    setAiInsights(null);
+  }, []);
 
   // Handle AI Insights error
   const handleAiError = useCallback((message: string) => {
@@ -284,14 +301,24 @@ export default function SavedComparisonsPage() {
                     priorPeriod={selectedSnapshot.priorPeriod}
                     currentPeriod={selectedSnapshot.currentPeriod}
                     disabled={selectedSnapshot.data.length === 0}
+                    isLoading={isAiLoading}
+                    onInsightsReceived={handleAiInsightsReceived}
+                    onLoadingChange={handleAiLoadingChange}
                     onError={handleAiError}
                   />
                 </Box>
               </Box>
 
+              {/* AI Insights - inline display */}
+              {aiInsights && (
+                <Box sx={{ px: 2, pt: 2 }}>
+                  <InlineInsights insights={aiInsights} onClose={handleAiInsightsClose} />
+                </Box>
+              )}
+
               {/* Comparison Grid */}
               {selectedSnapshot.data.length > 0 ? (
-                <Box sx={{ flex: 1, minHeight: 0, p: 2 }}>
+                <Box sx={{ flex: 1, minHeight: 0, p: 2, pt: aiInsights ? 0 : 2 }}>
                   {/* onRowUpdate is a no-op because grid is readOnly; required by component interface */}
                   <ComparisonGrid rows={selectedSnapshot.data} onRowUpdate={() => {}} readOnly />
                 </Box>

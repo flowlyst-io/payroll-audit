@@ -5,38 +5,42 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { ComparisonRow } from '@/types';
-import InsightsModal from './InsightsModal';
+
+// AI Insights brand color
+const AI_INSIGHTS_COLOR = '#5F5AA2';
 
 interface AiInsightsButtonProps {
   rows: ComparisonRow[];
   priorPeriod: string;
   currentPeriod: string;
   disabled?: boolean;
+  isLoading?: boolean;
+  onInsightsReceived: (insights: string) => void;
+  onLoadingChange: (loading: boolean) => void;
   onError: (message: string) => void;
 }
 
 /**
- * Reusable AI Insights button component
- * Handles API call, loading state, and modal display
+ * AI Insights button component
+ * Triggers API call and returns insights via callback
  */
 export default function AiInsightsButton({
   rows,
   priorPeriod,
   currentPeriod,
   disabled = false,
+  isLoading = false,
+  onInsightsReceived,
+  onLoadingChange,
   onError,
 }: AiInsightsButtonProps): React.JSX.Element {
-  const [isLoading, setIsLoading] = useState(false);
-  const [insights, setInsights] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-
   const handleClick = async (): Promise<void> => {
     if (rows.length === 0 || !priorPeriod || !currentPeriod) {
       onError('No comparison data available');
       return;
     }
 
-    setIsLoading(true);
+    onLoadingChange(true);
 
     try {
       const response = await fetch('/api/insights', {
@@ -59,8 +63,7 @@ export default function AiInsightsButton({
       }
 
       if (data.insights) {
-        setInsights(data.insights);
-        setModalOpen(true);
+        onInsightsReceived(data.insights);
       } else {
         onError('No insights returned');
       }
@@ -68,41 +71,30 @@ export default function AiInsightsButton({
       console.error('AI Insights error:', error);
       onError('Unable to connect. Check your internet connection.');
     } finally {
-      setIsLoading(false);
+      onLoadingChange(false);
     }
   };
 
-  const handleCloseModal = (): void => {
-    setModalOpen(false);
-  };
-
   return (
-    <>
-      <Button
-        variant="contained"
-        color="secondary"
-        startIcon={
-          isLoading ? (
-            <CircularProgress size={20} color="inherit" />
-          ) : (
-            <AutoAwesomeIcon />
-          )
-        }
-        onClick={handleClick}
-        disabled={disabled || isLoading || rows.length === 0}
-      >
-        {isLoading ? 'Analyzing...' : 'AI Insights'}
-      </Button>
-
-      {insights && (
-        <InsightsModal
-          open={modalOpen}
-          onClose={handleCloseModal}
-          insights={insights}
-          priorPeriod={priorPeriod}
-          currentPeriod={currentPeriod}
-        />
-      )}
-    </>
+    <Button
+      variant="contained"
+      startIcon={
+        isLoading ? (
+          <CircularProgress size={20} color="inherit" />
+        ) : (
+          <AutoAwesomeIcon />
+        )
+      }
+      onClick={handleClick}
+      disabled={disabled || isLoading || rows.length === 0}
+      sx={{
+        backgroundColor: AI_INSIGHTS_COLOR,
+        '&:hover': {
+          backgroundColor: '#4A4589',
+        },
+      }}
+    >
+      {isLoading ? 'Analyzing...' : 'AI Insights'}
+    </Button>
   );
 }
