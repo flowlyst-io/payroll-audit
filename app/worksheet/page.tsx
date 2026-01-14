@@ -113,8 +113,16 @@ export default function WorksheetPage() {
   const handleSaveSnapshot = useCallback(async () => {
     if (!priorPeriod || !currentPeriod || comparisonRows.length === 0) return;
 
-    // Commit any pending cell edits before saving
-    gridRef.current?.commitPendingEdits();
+    // Commit any pending cell edits and get their values before saving
+    const pendingNotes = gridRef.current?.commitPendingEdits() ?? new Map();
+
+    // Merge pending notes into comparison rows for the snapshot
+    const rowsToSave = comparisonRows.map((row) => ({
+      ...row,
+      note: pendingNotes.has(row.employeeKey)
+        ? pendingNotes.get(row.employeeKey)!
+        : row.note,
+    }));
 
     setIsSaving(true);
     try {
@@ -123,7 +131,7 @@ export default function WorksheetPage() {
         name: generateSnapshotName(priorPeriod, currentPeriod),
         priorPeriod,
         currentPeriod,
-        data: comparisonRows,
+        data: rowsToSave,
         savedAt: new Date().toISOString(),
       };
 
@@ -155,10 +163,18 @@ export default function WorksheetPage() {
   const handleExport = useCallback(() => {
     if (comparisonRows.length === 0 || !priorPeriod || !currentPeriod) return;
 
-    // Commit any pending cell edits before exporting
-    gridRef.current?.commitPendingEdits();
+    // Commit any pending cell edits and get their values before exporting
+    const pendingNotes = gridRef.current?.commitPendingEdits() ?? new Map();
 
-    exportComparisonCsv(comparisonRows, priorPeriod, currentPeriod);
+    // Merge pending notes into comparison rows for export
+    const rowsToExport = comparisonRows.map((row) => ({
+      ...row,
+      note: pendingNotes.has(row.employeeKey)
+        ? pendingNotes.get(row.employeeKey)!
+        : row.note,
+    }));
+
+    exportComparisonCsv(rowsToExport, priorPeriod, currentPeriod);
   }, [comparisonRows, priorPeriod, currentPeriod]);
 
   // Loading state
@@ -236,7 +252,7 @@ export default function WorksheetPage() {
             <Button
               variant="outlined"
               startIcon={<DownloadIcon />}
-              onClick={handleExport}
+              onMouseDown={handleExport}
               disabled={comparisonRows.length === 0}
             >
               Export CSV
@@ -244,7 +260,7 @@ export default function WorksheetPage() {
             <Button
               variant="contained"
               startIcon={<SaveIcon />}
-              onClick={handleSaveSnapshot}
+              onMouseDown={handleSaveSnapshot}
               disabled={isSaving || comparisonRows.length === 0}
             >
               {isSaving ? 'Saving...' : 'Save Snapshot'}

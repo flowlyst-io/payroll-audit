@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-01-13
+
+### Added
+
+- Homepage dashboard with payroll overview charts and statistics (PA-9)
+- Line chart showing total payroll trend across pay periods (PA-9)
+- Pie chart showing payroll distribution by department (PA-9)
+- Summary stat cards for total payroll, employee count, pay periods, and departments (PA-9)
+- Empty dashboard state with upload prompt when no data exists (PA-9)
+- Dashboard link in navigation bar (PA-9)
+
+### Fixed
+
+- Save Snapshot and Export CSV now correctly capture notes being actively edited (PA-11)
+
 ## [0.5.0] - 2026-01-13
 
 ### Added

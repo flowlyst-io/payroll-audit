@@ -77,3 +77,32 @@ export interface ParseResult {
   data: CsvRow[];
   headers: string[];
 }
+
+/**
+ * Aggregated total for a single pay period
+ * Used for dashboard trend chart
+ */
+export interface PeriodTotal {
+  period: string;
+  total: number;
+}
+
+/**
+ * Aggregated total for a single DAC/department
+ * Used for dashboard pie chart
+ */
+export interface DacTotal {
+  dac: string;
+  total: number;
+}
+
+/**
+ * Dashboard summary statistics
+ */
+export interface DashboardStats {
+  totalPayroll: number;
+  employeeCount: number;
+  periodCount: number;
+  departmentCount: number;
+  averagePayroll: number;
+}
