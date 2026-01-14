@@ -4,17 +4,25 @@
  */
 
 import { openDB, type IDBPDatabase } from 'idb';
-import type { StoredData, ColumnMapping, CsvRow, ComparisonSnapshot } from '@/types';
+import type {
+  StoredData,
+  ColumnMapping,
+  CsvRow,
+  ComparisonSnapshot,
+  SavedColumnPreferences,
+} from '@/types';
 
 const DB_NAME = 'payroll-audit-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 // Store names
 const DATA_STORE = 'payroll-data';
 const SNAPSHOTS_STORE = 'snapshots';
+const PREFERENCES_STORE = 'column-preferences';
 
 // Single key for the main data (we only store one dataset at a time)
 const DATA_KEY = 'current';
+const PREFERENCES_KEY = 'default';
 
 interface PayrollAuditDB {
   [DATA_STORE]: {
@@ -25,6 +33,10 @@ interface PayrollAuditDB {
     key: string;
     value: ComparisonSnapshot;
     indexes: { 'by-date': string };
+  };
+  [PREFERENCES_STORE]: {
+    key: string;
+    value: SavedColumnPreferences;
   };
 }
 
@@ -43,6 +55,11 @@ async function getDB(): Promise<IDBPDatabase<PayrollAuditDB>> {
       if (!db.objectStoreNames.contains(SNAPSHOTS_STORE)) {
         const snapshotStore = db.createObjectStore(SNAPSHOTS_STORE, { keyPath: 'id' });
         snapshotStore.createIndex('by-date', 'savedAt');
+      }
+
+      // Create store for column preferences (v2)
+      if (!db.objectStoreNames.contains(PREFERENCES_STORE)) {
+        db.createObjectStore(PREFERENCES_STORE);
       }
     },
   });
@@ -155,20 +172,6 @@ export async function loadSnapshots(): Promise<ComparisonSnapshot[]> {
 }
 
 /**
- * Get a single snapshot by ID
- */
-export async function getSnapshot(id: string): Promise<ComparisonSnapshot | null> {
-  try {
-    const db = await getDB();
-    const snapshot = await db.get(SNAPSHOTS_STORE, id);
-    return snapshot || null;
-  } catch (error) {
-    console.error('Failed to get snapshot:', error);
-    return null;
-  }
-}
-
-/**
  * Delete a snapshot by ID
  */
 export async function deleteSnapshot(id: string): Promise<void> {
@@ -189,5 +192,46 @@ export async function clearSnapshots(): Promise<void> {
     await db.clear(SNAPSHOTS_STORE);
   } catch (error) {
     console.error('Failed to clear snapshots:', error);
+  }
+}
+
+// ============================================
+// Column Preferences functions (for PA-7)
+// ============================================
+
+/**
+ * Save column preferences for auto-selecting on future uploads
+ */
+export async function saveColumnPreferences(
+  mapping: ColumnMapping
+): Promise<void> {
+  const prefs: SavedColumnPreferences = {
+    employeeName: mapping.employeeName,
+    amount: mapping.amount,
+    payPeriod: mapping.payPeriod,
+    dac: mapping.dac,
+    savedAt: new Date().toISOString(),
+  };
+
+  try {
+    const db = await getDB();
+    await db.put(PREFERENCES_STORE, prefs, PREFERENCES_KEY);
+  } catch (error) {
+    console.error('Failed to save column preferences:', error);
+  }
+}
+
+/**
+ * Load saved column preferences
+ * Returns null if no preferences exist
+ */
+export async function loadColumnPreferences(): Promise<SavedColumnPreferences | null> {
+  try {
+    const db = await getDB();
+    const prefs = await db.get(PREFERENCES_STORE, PREFERENCES_KEY);
+    return prefs || null;
+  } catch (error) {
+    console.error('Failed to load column preferences:', error);
+    return null;
   }
 }

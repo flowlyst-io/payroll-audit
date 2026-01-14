@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
@@ -13,7 +13,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import DownloadIcon from '@mui/icons-material/Download';
 import AppBar from '@/components/AppBar';
 import PayPeriodSelector from '@/components/PayPeriodSelector';
-import ComparisonGrid from '@/components/ComparisonGrid';
+import ComparisonGrid, { type ComparisonGridRef } from '@/components/ComparisonGrid';
 import { loadData, saveSnapshot } from '@/utils/storage';
 import { getUniquePayPeriods, buildComparisonRows } from '@/utils/calculations';
 import { generateSnapshotName } from '@/utils/formatters';
@@ -22,6 +22,7 @@ import type { StoredData, ComparisonRow, ComparisonSnapshot } from '@/types';
 
 export default function WorksheetPage() {
   const router = useRouter();
+  const gridRef = useRef<ComparisonGridRef>(null);
 
   // Loading and data state
   const [isLoading, setIsLoading] = useState(true);
@@ -71,11 +72,11 @@ export default function WorksheetPage() {
     return getUniquePayPeriods(storedData.csvData, storedData.mapping);
   }, [storedData]);
 
-  // Initialize pay period selection when data loads
+  // Initialize pay period selection when data loads (default to last two periods)
   useEffect(() => {
     if (payPeriods.length >= 2 && !priorPeriod && !currentPeriod) {
-      setPriorPeriod(payPeriods[0]);
-      setCurrentPeriod(payPeriods[1]);
+      setPriorPeriod(payPeriods[payPeriods.length - 2]);
+      setCurrentPeriod(payPeriods[payPeriods.length - 1]);
     } else if (payPeriods.length === 1 && !priorPeriod && !currentPeriod) {
       setPriorPeriod(payPeriods[0]);
       setCurrentPeriod(payPeriods[0]);
@@ -111,6 +112,9 @@ export default function WorksheetPage() {
   // Handle save snapshot
   const handleSaveSnapshot = useCallback(async () => {
     if (!priorPeriod || !currentPeriod || comparisonRows.length === 0) return;
+
+    // Commit any pending cell edits before saving
+    gridRef.current?.commitPendingEdits();
 
     setIsSaving(true);
     try {
@@ -150,6 +154,10 @@ export default function WorksheetPage() {
   // Handle export CSV
   const handleExport = useCallback(() => {
     if (comparisonRows.length === 0 || !priorPeriod || !currentPeriod) return;
+
+    // Commit any pending cell edits before exporting
+    gridRef.current?.commitPendingEdits();
+
     exportComparisonCsv(comparisonRows, priorPeriod, currentPeriod);
   }, [comparisonRows, priorPeriod, currentPeriod]);
 
@@ -247,7 +255,7 @@ export default function WorksheetPage() {
         {/* DataGrid - fills remaining space */}
         {comparisonRows.length > 0 ? (
           <Box sx={{ flex: 1, minHeight: 0 }}>
-            <ComparisonGrid rows={comparisonRows} onRowUpdate={handleRowUpdate} />
+            <ComparisonGrid ref={gridRef} rows={comparisonRows} onRowUpdate={handleRowUpdate} />
           </Box>
         ) : (
           <Box sx={{ textAlign: 'center', py: 8 }}>

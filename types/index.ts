@@ -18,6 +18,19 @@ export interface ColumnMapping {
   employeeName: string; // CSV header for employee name
   amount: string; // CSV header for amount/salary
   payPeriod: string; // CSV header for pay period
+  dac: string; // CSV header for DAC/department
+}
+
+/**
+ * Saved column preferences for auto-selecting columns on future uploads
+ * Stores the header names user previously mapped to each role
+ */
+export interface SavedColumnPreferences {
+  employeeName: string | null; // Last used header for employee
+  amount: string | null; // Last used header for amount
+  payPeriod: string | null; // Last used header for pay period
+  dac: string | null; // Last used header for DAC
+  savedAt: string; // ISO timestamp
 }
 
 /**

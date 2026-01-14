@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-01-13
+
+### Added
+
+- DAC/Department as 4th required column in column mapping (PA-7)
+- Auto-select columns based on previous mapping preferences (PA-7)
+
+### Changed
+
+- Worksheet now defaults to last two pay periods instead of first two (PA-8)
+- Saved comparisons page redesigned with side-by-side master-detail layout (PA-6)
+- Notes editing now activates with single-click instead of double-click (PA-5)
+- Arrow keys (↑↓) navigate between note cells while editing (PA-5)
+
+### Fixed
+
+- Save Snapshot and Export CSV now capture notes being actively edited (PA-11)
+
+### Removed
+
+- Standalone snapshot view page replaced by inline panel (PA-6)
+
 ## [0.4.0] - 2026-01-13
 
 ### Added
